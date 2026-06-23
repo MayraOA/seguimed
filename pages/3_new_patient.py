@@ -8,6 +8,9 @@ load_dotenv()
 
 st.set_page_config(page_title="Nuevo Paciente · SeguiMed", page_icon="🏥", layout="wide")
 
+from utils.styles import apply_styles
+apply_styles()
+
 if not st.session_state.get("authenticated"):
     st.warning("Debes iniciar sesión primero.")
     st.page_link("app.py", label="Ir al login", icon="🔐")

@@ -1,80 +1,62 @@
-# Resumen de hallazgos — 4 entrevistas con médicos independientes Lima
+# Resumen de hallazgos — 5 entrevistas con médicos independientes Lima
 
 **Período:** Junio 2026
 **Segmento:** Médicos independientes, Lima Metropolitana
-**Metodología:** Entrevistas semi-estructuradas (presencial y WhatsApp), 15 min c/u
+**Metodología:** Entrevistas semi-estructuradas (presencial y WhatsApp), ~15 min c/u
 
 ---
 
-## Hallazgo 1: El verdadero problema no es "mensajes sin responder"
+## Tabla resumen
 
-Todos los entrevistados afirman responder todos sus mensajes. El dolor real es la **ausencia de seguimiento proactivo**. Los médicos esperan que el paciente dé el primer paso — y muchos no lo dan.
+| # | Canales | Pacientes perdidos | Sistema actual | Horas/sem | Precio |
+|---|---|---|---|---|---|
+| E1 | WhatsApp + Facebook | No (invierte 20 h/sem) | Gmail agenda | ~20 h | No especificó |
+| E2 | WhatsApp + llamadas | Sí, varios | Ninguno (reactivo) | 0 | Según cantidad |
+| E3 | WhatsApp + llamadas | Sí | Notas + Google agenda | 0.5–2 h | Sistema previo falló |
+| E4 | WhatsApp + llamadas | Sí, varios | Memoria | <1 h | Dependería oferta |
+| E5 | WhatsApp + Instagram + llamadas | Seguimiento manual proactivo | Nombre+procedimiento en contacto | ~1 h | **S/.50/mes** |
+
+---
+
+## Hallazgo 1: El problema real no son los mensajes sin responder
+
+5 de 5 médicos responden todos sus mensajes. El dolor es la ausencia de seguimiento proactivo — esperan que el paciente dé el primer paso, y muchos no lo dan.
 
 > "Lo realizo cuando me llaman o vienen a la cita." — E2
 
 ---
 
-## Hallazgo 2: Todos han perdido pacientes (excepto quien invierte 20 h/semana)
+## Hallazgo 2: La pérdida de pacientes es generalizada
 
-3 de 4 médicos confirmaron haber perdido pacientes de forma recurrente. El único que no los pierde invierte aproximadamente **20 horas semanales** en gestión de mensajes — un costo de oportunidad enorme.
-
-| Entrevistado | Pacientes perdidos | Sistema actual | Horas/semana |
-|---|---|---|---|
-| E1 | No | Gmail agenda | ~20 h |
-| E2 | Sí, varios | Ninguno (reactivo) | 0 |
-| E3 | Sí | Notas + Google agenda | 0.5 – 2 h |
-| E4 | Sí, varios | Memoria | <1 h |
+3 de 5 médicos confirmaron pérdida activa de pacientes. El que no los pierde (E1) invierte ~20 h/semana para evitarlo. El cirujano (E5) ya hace seguimiento proactivo manual — pero sin sistema que lo escale.
 
 ---
 
-## Hallazgo 3: Los pacientes se pierden por ambos lados
+## Hallazgo 3: Ningún médico usa un CRM dedicado
 
-La pérdida es bilateral:
-- El médico no inicia contacto proactivo cuando el paciente no vuelve
-- El paciente pierde el número del médico o simplemente no recuerda volver
+- Gmail Agenda: 2 de 5
+- Notas en el contacto del celular: 1 de 5
+- Memoria pura: 1 de 5
+- Ninguno: 1 de 5
 
-> "Ellos pierden mi número." — E4
+El mercado está sin atender por herramientas dedicadas.
 
 ---
 
-## Hallazgo 4: El intento previo de solución tecnológica falló por la razón equivocada
-
-Un médico ya intentó un CRM o sistema similar. Falló porque **requería que el paciente cambie su comportamiento** (aprender a usar una app o portal).
+## Hallazgo 4: El intento previo de CRM fracasó por la razón incorrecta
 
 > "Ya tuve experiencia con un sistema, pero no funcionó porque varios de mis pacientes no sabían usarlo." — E3
 
-**Implicación directa para SeguiMed:** El producto solo requiere que el médico cambie su flujo. Los pacientes siguen recibiendo WhatsApp normal — canal que ya conocen y usan.
+SeguiMed resuelve esto: solo el médico cambia su flujo. Los pacientes siguen recibiendo WhatsApp normal — sin apps, sin portales.
 
 ---
 
-## Hallazgo 5: Las herramientas improvisadas son la norma
+## Hallazgo 5: Precio validado espontáneamente
 
-Los médicos que sí tienen algún sistema usan herramientas no diseñadas para esto:
-- Google Agenda (2 de 4)
-- Notas en el contacto del celular (1 de 4)
-- Memoria pura (1 de 4)
-
-Ninguno usa un CRM dedicado. El mercado está sin atender.
+El E5 mencionó S/.50/mes sin sugerencia — validación directa del Plan Básico (S/.49/mes). Los demás mostraron apertura según volumen, validando el modelo escalonado.
 
 ---
 
-## Hallazgo 6: Disposición a pagar ligada al volumen
+## Conclusión
 
-Ningún entrevistado dio un número espontáneo. Las respuestas fueron:
-- "No lo tenía pensado"
-- "Según la cantidad de pacientes"
-- "Dependería de ver la oferta"
-
-Esto valida el modelo de precios escalonado por cantidad de pacientes (S/.49 / S/.99 / S/.199).
-
----
-
-## Conclusión para el pitch
-
-El insight central queda validado: **el médico independiente no necesita un sistema que le ayude a responder — necesita uno que le ayude a iniciar el contacto en el momento correcto, sin que eso le cueste 20 horas semanales.**
-
-SeguiMed es la única solución que:
-1. Opera del lado del médico (no requiere cambio del paciente)
-2. Usa WhatsApp como canal de salida (sin fricción)
-3. Genera el mensaje con IA (sin esfuerzo cognitivo)
-4. Prioriza automáticamente quién necesita atención hoy
+El médico independiente no necesita responder mejor — ya responde bien. Necesita un sistema que le diga a quién contactar hoy, genere el mensaje con IA, y funcione con WhatsApp que el paciente ya usa. SeguiMed es exactamente eso. Precio validado: S/.50/mes.

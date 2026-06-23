@@ -11,6 +11,9 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+from utils.styles import apply_styles
+apply_styles()
+
 APP_PASSWORD = os.getenv("APP_PASSWORD", "demo1234")
 
 

@@ -13,6 +13,7 @@
 
 **URL:** [https://seguimed.streamlit.app](https://seguimed.streamlit.app)  
 **Contraseña:** `demo1234`
+**Video demo:** [Ver en Loom](URL_AQUI) — 2:30 min
 
 ---
 
@@ -42,10 +43,12 @@ Dashboard priorizado + IA que genera el mensaje + link de WhatsApp prellenado. E
 
 **Funcionalidades del MVP:**
 - Dashboard con 4 métricas de estado de pacientes en tiempo real
-- Generación de mensajes personalizados por IA en español peruano
-- Links de WhatsApp con mensaje prellenado (1 clic)
-- Registro de pacientes por nota de voz (Whisper transcribe → IA extrae datos)
-- Campañas de temporada para toda la base de pacientes (Navidad, Año Nuevo, control anual)
+- Generación de mensajes personalizados por IA en español peruano (DeepSeek-V3)
+- Links de WhatsApp con mensaje prellenado — el médico solo toca "Enviar"
+- Grabación de nota de voz en tiempo real (Whisper transcribe → IA extrae datos del paciente)
+- Historial completo de citas y contactos por paciente
+- Integración con Google Calendar para citas pasadas y futuras (1 clic)
+- Campañas de temporada para toda la base de pacientes
 
 ---
 

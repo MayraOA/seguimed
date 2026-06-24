@@ -95,6 +95,12 @@ def insert_patient(data: dict):
         return {"success": False, "error": "Modo demo: no se puede guardar"}
     try:
         res = client.table("patients").insert(data).execute()
+        patient_id = res.data[0]["id"]
+        diagnosis = data.get("diagnosis") or ""
+        if data.get("last_contact_date"):
+            add_appointment_to_history(patient_id, data["last_contact_date"], "cita_pasada", diagnosis)
+        if data.get("next_appointment"):
+            add_appointment_to_history(patient_id, data["next_appointment"], "cita_futura", diagnosis)
         return {"success": True, "data": res.data}
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -107,6 +113,21 @@ def update_patient(patient_id, data: dict):
     try:
         res = client.table("patients").update(data).eq("id", patient_id).execute()
         return {"success": True, "data": res.data}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def add_appointment_to_history(patient_id, appt_date, appointment_type, notes):
+    client = get_client()
+    if DEMO_MODE or client is None:
+        return {"success": False, "error": "Modo demo"}
+    try:
+        client.table("contacts").insert({
+            "patient_id": patient_id,
+            "contact_type": appointment_type,
+            "message_sent": f"Cita registrada: {appt_date} — {notes or 'Sin notas'}",
+        }).execute()
+        return {"success": True}
     except Exception as e:
         return {"success": False, "error": str(e)}
 

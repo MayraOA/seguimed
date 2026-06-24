@@ -14,21 +14,14 @@ if not st.session_state.get("authenticated"):
     st.page_link("app.py", label="Ir al login", icon="🔐")
     st.stop()
 
+from datetime import date, datetime
 from utils.database import search_patients, get_all_patients, get_contacts_for_patient, update_patient
 from utils.ai import generate_message
 from utils.whatsapp import get_whatsapp_link
+from utils.calendar import get_google_calendar_link
 
 doctor_name = st.session_state.get("doctor_name", os.getenv("DOCTOR_NAME", "Dr. Demo"))
 specialty = st.session_state.get("doctor_specialty", os.getenv("DOCTOR_SPECIALTY", "Medicina General"))
-
-with st.sidebar:
-    st.markdown("## 🏥 SeguiMed")
-    st.markdown(f"**{doctor_name}**")
-    st.markdown(f"*{specialty}*")
-    st.divider()
-    if st.button("🚪 Cerrar sesión", use_container_width=True):
-        st.session_state["authenticated"] = False
-        st.rerun()
 
 st.markdown("## 👥 Lista de Pacientes")
 
@@ -58,7 +51,7 @@ if detail_id:
 
     st.markdown(f"## {patient['name']}")
 
-    tab_info, tab_edit, tab_msg = st.tabs(["📋 Información", "✏️ Editar", "💬 Mensajes"])
+    tab_info, tab_edit, tab_msg, tab_hist = st.tabs(["📋 Información", "✏️ Editar", "💬 Mensajes", "📋 Historial"])
 
     with tab_info:
         col1, col2 = st.columns(2)
@@ -71,17 +64,27 @@ if detail_id:
             st.markdown(f"**Estado:** {patient.get('status','—')}")
             st.markdown(f"**Notas:** {patient.get('notes','—')}")
 
-        st.markdown("### Historial de contactos")
-        contacts = get_contacts_for_patient(patient["id"])
-        if not contacts:
-            st.caption("Sin contactos registrados.")
-        else:
-            for c in contacts:
-                with st.expander(f"{c.get('contact_type','—')} · {c.get('created_at','')[:10]}"):
-                    st.markdown(c.get("message_sent", ""))
+        st.divider()
+        na = patient.get("next_appointment")
+        lc = patient.get("last_contact_date")
+        if na:
+            try:
+                cal_url = get_google_calendar_link(
+                    patient["name"], date.fromisoformat(na), patient.get("diagnosis") or "", doctor_name
+                )
+                st.link_button("📅 Agregar próxima cita al Google Calendar", cal_url)
+            except Exception:
+                pass
+        if lc:
+            try:
+                cal_url = get_google_calendar_link(
+                    patient["name"], date.fromisoformat(lc), patient.get("diagnosis") or "", doctor_name
+                )
+                st.link_button("📅 Registrar cita pasada en Calendar", cal_url)
+            except Exception:
+                pass
 
     with tab_edit:
-        from datetime import date
         with st.form("form_edit"):
             col1, col2 = st.columns(2)
             with col1:
@@ -139,6 +142,77 @@ if detail_id:
             edited = st.text_area("Mensaje", value=st.session_state["detail_msg"], height=120)
             wa_link = get_whatsapp_link(patient.get("phone", ""), edited)
             st.link_button("📱 Abrir en WhatsApp", wa_link)
+
+    with tab_hist:
+        MONTHS_ES = [
+            "enero", "febrero", "marzo", "abril", "mayo", "junio",
+            "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+        ]
+        CONTACT_ICONS = {
+            "cita_pasada": "🗓️",
+            "cita_futura": "📅",
+            "followup": "💬",
+            "whatsapp": "💬",
+            "appointment_reminder": "💬",
+            "no_response": "💬",
+        }
+        CONTACT_BADGES = {
+            "cita_pasada":          ("#636363", "Cita pasada"),
+            "cita_futura":          ("#0F6E56", "Cita futura"),
+            "followup":             ("#1D9E75", "Seguimiento"),
+            "whatsapp":             ("#25D366", "WhatsApp"),
+            "appointment_reminder": ("#ffa500", "Recordatorio"),
+            "no_response":          ("#ff4b4b", "Sin respuesta"),
+            "campaign_christmas":   ("#c0392b", "Campaña"),
+            "campaign_new_year":    ("#8e44ad", "Campaña"),
+            "campaign_checkup":     ("#2980b9", "Campaña"),
+        }
+
+        contacts = get_contacts_for_patient(patient["id"])
+        if not contacts:
+            st.info("No hay registros de contacto aún.")
+        else:
+            for c in contacts:
+                ct = c.get("contact_type", "")
+                icon = "📣" if ct.startswith("campaign") else CONTACT_ICONS.get(ct, "📌")
+                badge_color, badge_label = CONTACT_BADGES.get(ct, ("#555555", ct.replace("_", " ").title()))
+
+                raw_dt = c.get("created_at", "")
+                try:
+                    dt_obj = datetime.fromisoformat(raw_dt[:19])
+                    formatted_date = f"{dt_obj.day} de {MONTHS_ES[dt_obj.month - 1]} de {dt_obj.year}"
+                except Exception:
+                    formatted_date = raw_dt[:10] if raw_dt else "—"
+
+                col_icon, col_body = st.columns([1, 11])
+                with col_icon:
+                    st.markdown(
+                        f"<div style='font-size:22px;padding-top:6px'>{icon}</div>",
+                        unsafe_allow_html=True,
+                    )
+                with col_body:
+                    st.markdown(
+                        f"**{formatted_date}** &nbsp;"
+                        f'<span style="background:{badge_color};color:white;'
+                        f'padding:2px 10px;border-radius:4px;font-size:12px">{badge_label}</span>',
+                        unsafe_allow_html=True,
+                    )
+                    st.caption(c.get("message_sent", ""))
+
+                    if ct in ("cita_pasada", "cita_futura"):
+                        try:
+                            msg = c.get("message_sent", "")
+                            date_str = msg.split("Cita registrada: ")[1].split(" —")[0].strip()
+                            cal_dt = date.fromisoformat(date_str)
+                            cal_url = get_google_calendar_link(
+                                patient["name"], cal_dt,
+                                patient.get("diagnosis") or "", doctor_name,
+                            )
+                            st.link_button("Ver en Google Calendar", cal_url, key=f"hist_cal_{c.get('id','')}")
+                        except Exception:
+                            pass
+
+                st.divider()
 
 else:
     st.markdown(f"**{len(patients)} pacientes**")

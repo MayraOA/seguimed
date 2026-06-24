@@ -33,15 +33,6 @@ def save_config(data: dict):
 doctor_name = st.session_state.get("doctor_name", os.getenv("DOCTOR_NAME", "Dr. Demo"))
 specialty = st.session_state.get("doctor_specialty", os.getenv("DOCTOR_SPECIALTY", "Medicina General"))
 
-with st.sidebar:
-    st.markdown("## 🏥 SeguiMed")
-    st.markdown(f"**{doctor_name}**")
-    st.markdown(f"*{specialty}*")
-    st.divider()
-    if st.button("🚪 Cerrar sesión", use_container_width=True):
-        st.session_state["authenticated"] = False
-        st.rerun()
-
 st.markdown("## ⚙️ Configuración")
 
 saved = load_config()

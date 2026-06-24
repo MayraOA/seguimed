@@ -14,21 +14,14 @@ if not st.session_state.get("authenticated"):
     st.page_link("app.py", label="Ir al login", icon="🔐")
     st.stop()
 
+from datetime import date
 from utils.database import get_dashboard_stats, log_contact
 from utils.ai import generate_message
 from utils.whatsapp import get_whatsapp_link
+from utils.calendar import get_google_calendar_link
 
 doctor_name = st.session_state.get("doctor_name", os.getenv("DOCTOR_NAME", "Dr. Demo"))
 specialty = st.session_state.get("doctor_specialty", os.getenv("DOCTOR_SPECIALTY", "Medicina General"))
-
-with st.sidebar:
-    st.markdown("## 🏥 SeguiMed")
-    st.markdown(f"**{doctor_name}**")
-    st.markdown(f"*{specialty}*")
-    st.divider()
-    if st.button("🚪 Cerrar sesión", use_container_width=True):
-        st.session_state["authenticated"] = False
-        st.rerun()
 
 st.markdown("## 📊 Dashboard")
 
@@ -131,5 +124,24 @@ else:
                     edited = st.text_area("Mensaje generado (editable)", value=msg_text, key=f"edited_{p['id']}", height=120)
                     wa_link = get_whatsapp_link(p.get("phone", ""), edited)
                     st.link_button("📱 Abrir en WhatsApp", wa_link)
+
+                na = p.get("next_appointment")
+                lc = p.get("last_contact_date")
+                if na:
+                    try:
+                        cal_url = get_google_calendar_link(
+                            p["name"], date.fromisoformat(na), p.get("diagnosis") or "", doctor_name
+                        )
+                        st.link_button("📅 Agregar próxima cita al Google Calendar", cal_url, key=f"cal_na_{p['id']}")
+                    except Exception:
+                        pass
+                elif lc:
+                    try:
+                        cal_url = get_google_calendar_link(
+                            p["name"], date.fromisoformat(lc), p.get("diagnosis") or "", doctor_name
+                        )
+                        st.link_button("📅 Registrar cita pasada en Calendar", cal_url, key=f"cal_lc_{p['id']}")
+                    except Exception:
+                        pass
 
         st.divider()

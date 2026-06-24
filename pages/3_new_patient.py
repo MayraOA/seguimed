@@ -18,18 +18,10 @@ if not st.session_state.get("authenticated"):
 
 from utils.database import insert_patient
 from utils.ai import transcribe_audio, extract_patient_from_text
+from utils.calendar import get_google_calendar_link
 
 doctor_name = st.session_state.get("doctor_name", os.getenv("DOCTOR_NAME", "Dr. Demo"))
 specialty = st.session_state.get("doctor_specialty", os.getenv("DOCTOR_SPECIALTY", "Medicina General"))
-
-with st.sidebar:
-    st.markdown("## 🏥 SeguiMed")
-    st.markdown(f"**{doctor_name}**")
-    st.markdown(f"*{specialty}*")
-    st.divider()
-    if st.button("🚪 Cerrar sesión", use_container_width=True):
-        st.session_state["authenticated"] = False
-        st.rerun()
 
 st.markdown("## ➕ Nuevo Paciente")
 
@@ -64,25 +56,74 @@ with tab_manual:
                 result = insert_patient(data)
                 if result["success"]:
                     st.success(f"✅ Paciente {name} guardado correctamente.")
+                    st.session_state["saved_manual"] = {
+                        "name": name,
+                        "next_appointment": str(next_appt) if next_appt else None,
+                        "last_contact_date": str(last_contact),
+                        "diagnosis": diagnosis or "",
+                    }
                 else:
                     st.error(f"Error al guardar: {result['error']}")
+                    st.session_state.pop("saved_manual", None)
+
+    saved_m = st.session_state.get("saved_manual")
+    if saved_m:
+        st.markdown("**📅 Agregar al Google Calendar**")
+        na = saved_m.get("next_appointment")
+        lc = saved_m.get("last_contact_date")
+        if na:
+            try:
+                cal_url = get_google_calendar_link(
+                    saved_m["name"], date.fromisoformat(na), saved_m["diagnosis"], doctor_name
+                )
+                st.link_button(f"📅 Agendar próxima cita ({na})", cal_url, key="cal_m_na")
+            except Exception:
+                pass
+        if lc:
+            try:
+                cal_url = get_google_calendar_link(
+                    saved_m["name"], date.fromisoformat(lc), saved_m["diagnosis"], doctor_name
+                )
+                st.link_button(f"📅 Registrar cita anterior ({lc})", cal_url, key="cal_m_lc")
+            except Exception:
+                pass
 
 with tab_voz:
-    st.markdown("Sube una nota de voz grabada durante o después de la consulta.")
-    audio_file = st.file_uploader(
-        "Archivo de audio", type=["mp3", "wav", "m4a", "ogg"], label_visibility="collapsed"
+    st.markdown("Graba o sube una nota de voz para registrar al paciente automáticamente.")
+
+    input_mode = st.radio(
+        "modo",
+        ["🎙️ Grabar ahora", "📁 Subir archivo"],
+        horizontal=True,
+        label_visibility="collapsed",
     )
 
-    if audio_file is not None:
-        st.audio(audio_file)
-        if st.button("🎙️ Transcribir y extraer datos"):
+    audio_data = None
+    audio_filename = "recording.wav"
+
+    if input_mode == "🎙️ Grabar ahora":
+        recorded = st.audio_input("🎙️ Grabar nota de voz")
+        if recorded:
+            audio_data = recorded
+    else:
+        uploaded = st.file_uploader(
+            "Archivo de audio", type=["mp3", "wav", "m4a", "ogg"], label_visibility="collapsed"
+        )
+        if uploaded:
+            audio_data = uploaded
+            audio_filename = uploaded.name
+
+    if audio_data is not None:
+        st.audio(audio_data)
+        st.divider()
+
+        if st.button("🔍 Transcribir y extraer datos", type="primary"):
+            audio_bytes = audio_data.read()
             with st.spinner("Transcribiendo con Whisper..."):
                 try:
-                    audio_bytes = audio_file.read()
-                    transcription = transcribe_audio(audio_bytes, audio_file.name)
+                    transcription = transcribe_audio(audio_bytes, audio_filename)
                     st.session_state["transcription"] = transcription
-                    st.success("Transcripción completada")
-                    st.text_area("Transcripción", transcription, height=100)
+                    st.session_state.pop("extracted_patient", None)
                 except Exception as e:
                     st.error(f"Error al transcribir: {e}")
 
@@ -95,6 +136,10 @@ with tab_voz:
                         st.error(f"Error al extraer datos: {e}")
                         st.session_state["extracted_patient"] = {}
 
+    if st.session_state.get("transcription"):
+        with st.expander("📝 Ver transcripción completa"):
+            st.text(st.session_state["transcription"])
+
     extracted = st.session_state.get("extracted_patient")
     if extracted is not None:
         st.markdown("### Datos extraídos — confirma y edita")
@@ -103,14 +148,12 @@ with tab_voz:
             with col1:
                 name_v = st.text_input("Nombre completo *", value=extracted.get("name") or "")
                 phone_v = st.text_input("Teléfono *", value=extracted.get("phone") or "+51")
-                default_date = date.today()
-                last_contact_v = st.date_input("Fecha de última visita *", value=default_date)
+                last_contact_v = st.date_input("Fecha de última visita *", value=date.today())
             with col2:
-                na_raw = extracted.get("next_appointment")
                 next_appt_v = st.date_input("Próxima cita (opcional)", value=None)
                 diagnosis_v = st.text_input("Diagnóstico", value=extracted.get("diagnosis") or "")
             notes_v = st.text_area("Notas", value=extracted.get("notes") or "")
-            confirm = st.form_submit_button("✅ Confirmar y guardar", use_container_width=True)
+            confirm = st.form_submit_button("✅ Confirmar y guardar paciente", use_container_width=True)
 
             if confirm:
                 if not name_v or not phone_v or phone_v == "+51":
@@ -130,5 +173,34 @@ with tab_voz:
                         st.success(f"✅ Paciente {name_v} guardado correctamente.")
                         st.session_state.pop("extracted_patient", None)
                         st.session_state.pop("transcription", None)
+                        st.session_state["saved_voz"] = {
+                            "name": name_v,
+                            "next_appointment": str(next_appt_v) if next_appt_v else None,
+                            "last_contact_date": str(last_contact_v),
+                            "diagnosis": diagnosis_v or "",
+                        }
                     else:
                         st.error(f"Error al guardar: {result['error']}")
+                        st.session_state.pop("saved_voz", None)
+
+    saved_v = st.session_state.get("saved_voz")
+    if saved_v:
+        st.markdown("**📅 Agregar al Google Calendar**")
+        na = saved_v.get("next_appointment")
+        lc = saved_v.get("last_contact_date")
+        if na:
+            try:
+                cal_url = get_google_calendar_link(
+                    saved_v["name"], date.fromisoformat(na), saved_v["diagnosis"], doctor_name
+                )
+                st.link_button(f"📅 Agendar próxima cita ({na})", cal_url, key="cal_v_na")
+            except Exception:
+                pass
+        if lc:
+            try:
+                cal_url = get_google_calendar_link(
+                    saved_v["name"], date.fromisoformat(lc), saved_v["diagnosis"], doctor_name
+                )
+                st.link_button(f"📅 Registrar cita anterior ({lc})", cal_url, key="cal_v_lc")
+            except Exception:
+                pass

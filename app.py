@@ -17,12 +17,6 @@ apply_styles()
 APP_PASSWORD = os.getenv("APP_PASSWORD", "demo1234")
 
 
-def check_auth():
-    if not st.session_state.get("authenticated"):
-        show_login()
-        st.stop()
-
-
 def show_login():
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
@@ -42,23 +36,27 @@ def show_login():
                     st.error("Contraseña incorrecta")
 
 
-def setup_sidebar():
-    with st.sidebar:
-        st.markdown("## 🏥 SeguiMed")
-        doctor = st.session_state.get("doctor_name", os.getenv("DOCTOR_NAME", "Dr. Demo"))
-        specialty = st.session_state.get("doctor_specialty", os.getenv("DOCTOR_SPECIALTY", "Medicina General"))
-        st.markdown(f"**{doctor}**")
-        st.markdown(f"*{specialty}*")
-        st.divider()
-        if st.button("🚪 Cerrar sesión", use_container_width=True):
-            st.session_state["authenticated"] = False
-            st.rerun()
-
-
 if not st.session_state.get("authenticated"):
     show_login()
-else:
-    setup_sidebar()
-    st.markdown("## 🏥 Bienvenido a SeguiMed")
-    st.markdown("Usa el menú lateral para navegar entre las secciones.")
-    st.info("👈 Selecciona **Dashboard** para ver el resumen de tus pacientes.")
+    st.stop()
+
+with st.sidebar:
+    st.markdown("## 🏥 SeguiMed")
+    doctor = st.session_state.get("doctor_name", os.getenv("DOCTOR_NAME", "Dr. Demo"))
+    specialty = st.session_state.get("doctor_specialty", os.getenv("DOCTOR_SPECIALTY", "Medicina General"))
+    st.markdown(f"**{doctor}**")
+    st.markdown(f"*{specialty}*")
+    st.divider()
+    if st.button("🚪 Cerrar sesión", use_container_width=True):
+        st.session_state["authenticated"] = False
+        st.rerun()
+    st.divider()
+
+pg = st.navigation([
+    st.Page("pages/1_dashboard.py",   title="Dashboard",       icon="📊"),
+    st.Page("pages/2_patients.py",    title="Pacientes",       icon="👥"),
+    st.Page("pages/3_new_patient.py", title="Nuevo Paciente",  icon="➕"),
+    st.Page("pages/4_campaigns.py",   title="Campañas",        icon="📣"),
+    st.Page("pages/5_settings.py",    title="Configuración",   icon="⚙️"),
+])
+pg.run()

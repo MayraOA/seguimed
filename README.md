@@ -13,7 +13,7 @@
 
 **URL:** [https://seguimed.streamlit.app](https://seguimed.streamlit.app)  
 **Contraseña:** `demo1234`
-**Video demo:** [Ver en Loom](URL_AQUI) — 2:30 min
+**Video demo:** [Ver en Google Drive](https://drive.google.com/file/d/1HWb0Y80C5dxA8fShechzolcqECMkvLdq/view?usp=sharing) — 4:30 min
 
 ---
 
